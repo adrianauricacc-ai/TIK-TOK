@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>...</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#000;
+}
+
+#screen{
+    width:100%;
+    height:100%;
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+}
+
+#ghost{
+    display:none;
+    width:100%;
+    height:100%;
+    position:relative;
+    align-items:center;
+    justify-content:center;
+    background:#000;
+    animation:shake .06s infinite;
+}
+
+.face{
+    width:75vw;
+    height:85vh;
+    max-width:600px;
+    max-height:850px;
+    background:
+        radial-gradient(circle at 35% 35%,#fff 0 5%,transparent 6%),
+        radial-gradient(circle at 65% 35%,#fff 0 5%,transparent 6%),
+        radial-gradient(circle at 35% 35%,#050505 0 12%,transparent 13%),
+        radial-gradient(circle at 65% 35%,#050505 0 12%,transparent 13%),
+        radial-gradient(ellipse at 50% 65%,#050505 0 18%,transparent 19%),
+        linear-gradient(100deg,#aaa,#eee 45%,#999);
+    border-radius:48% 48% 42% 42%;
+    position:relative;
+    box-shadow:
+        0 0 40px #fff,
+        0 0 100px #555;
+}
+
+.face:before,
+.face:after{
+    content:"";
+    position:absolute;
+    top:58%;
+    width:22%;
+    height:9%;
+    background:#111;
+    border-radius:50%;
+}
+
+.face:before{
+    left:19%;
+    transform:rotate(-8deg);
+}
+
+.face:after{
+    right:19%;
+    transform:rotate(8deg);
+}
+
+.mouth{
+    position:absolute;
+    left:25%;
+    right:25%;
+    bottom:13%;
+    height:22%;
+    background:#050505;
+    border-radius:8px 8px 45% 45%;
+    box-shadow:inset 0 0 20px #555;
+}
+
+.teeth{
+    position:absolute;
+    top:8%;
+    left:5%;
+    right:5%;
+    height:20%;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #eee 0 10px,
+            #111 10px 13px
+        );
+}
+
+#flash{
+    position:absolute;
+    inset:0;
+    background:white;
+    display:none;
+    z-index:10;
+}
+
+@keyframes shake{
+    0%{transform:translate(0,0) scale(1)}
+    25%{transform:translate(5px,-4px) scale(1.03)}
+    50%{transform:translate(-5px,4px) scale(1.05)}
+    75%{transform:translate(4px,3px) scale(1.02)}
+    100%{transform:translate(-3px,-3px) scale(1.04)}
+}
+
+.show{
+    display:flex!important;
+}
+</style>
+</head>
+
+<body>
+
+<div id="screen">
+
+    <div id="ghost">
+        <div class="face">
+            <div class="mouth">
+                <div class="teeth"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="flash"></div>
+
+</div>
+
+<script>
+
+let started = false;
+
+function scare(){
+
+    if(started) return;
+
+    started = true;
+
+    setTimeout(() => {
+
+        const ghost =
+            document.getElementById("ghost");
+
+        const flash =
+            document.getElementById("flash");
+
+        flash.style.display = "block";
+
+        setTimeout(() => {
+
+            flash.style.display = "none";
+
+            ghost.classList.add("show");
+
+            scareSound();
+
+        },120);
+
+    },3000);
+}
+
+
+function scareSound(){
+
+    try{
+
+        const AudioContext =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        const ctx = new AudioContext();
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sawtooth";
+
+        osc.frequency.setValueAtTime(
+            900,
+            ctx.currentTime
+        );
+
+        osc.frequency.exponentialRampToValueAtTime(
+            90,
+            ctx.currentTime + 1.2
+        );
+
+        gain.gain.setValueAtTime(
+            0.001,
+            ctx.currentTime
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.8,
+            ctx.currentTime + 0.05
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            ctx.currentTime + 1.2
+        );
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 1.2);
+
+    }catch(e){}
+
+}
+
+document
+    .getElementById("screen")
+    .addEventListener("click", scare);
+
+</script>
+
+</body>
+</html>
